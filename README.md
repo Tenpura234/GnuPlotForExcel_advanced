@@ -1,65 +1,145 @@
-# GnuPlotForExcel
+# GnuplotForExcel
 
-Welcome to the GnuPlot add-in for Excel! 
+Excel 上から **gnuplot** を呼び出し、高品質なグラフを作成・配置・自動更新できる Excel VSTO アドイン（.NET Framework 4.7.2 / C#）です。
 
-For Excel 2010, 2013, and 2016. 
+Excel シート内のセルデータを gnuplot スクリプトから直接参照でき、データの変更に連動したグラフの自動更新や、PDF / PNG 形式での高品質出力に対応しています。
 
-This add-in is alternative to Excel graphics which facilitates use of GnuPlot directly in Excel sheets. GnuPlot scripts are stored in Excel along with the generated graphs and can be instantly edited and regenerated without leaving the Excel environment. Data can be read from Excel sheets by a cell range ("A1:C400") or using an Excel named range. 
+---
 
-Step 0 - Install GnuPlot if you haven't already. 
+## 主な特徴
 
-https://sourceforge.net/projects/gnuplot/ 
+- **セルデータの直接参照**: `<<"Sheet1!A1:B20">>` のように記述するだけで、Excel セルのデータを自動的に一時データファイルへ変換してプロットします。飛び飛びのセル範囲（Ctrlキー選択）にも対応しています。
+- **3D / マトリクスデータ対応**: `<<matrix "Sheet1!B2:G10">>` 構文により、等高線や 3D サーフェスプロット（`splot`）も簡単に行えます。
+- **動的リンク（自動更新）**: セルデータを書き換えると、デバウンス処理（約1秒）を経てグラフが自動で再描画されます。
+- **スクリプトの再編集**: グラフ画像自体にスクリプト情報が埋め込まれているため、グラフを選択して「編集」を押すだけでいつでもスクリプトを変更できます。
+- **プリセット管理**: よく使うグラフのスタイルやスクリプトをテンプレートとして保存し、再利用できます。
 
-Note the installation directory of the executable, typically C:\Program Files\gnuplot\bin, you will need it later. 
+---
 
-Step 1 - Download the GnuPlot add-in for Excel from GitHub.
+## 動作要件
 
-Minimally, you will need only GnuPlot.xlam. GnuPlot.xlsx is an empty workbook with GnuPlot buttons in the context menus.  GnuPlot.xltx is an Excel template which defines the relevant buttons. See the following for more technical information on context menus. 
+- Microsoft Excel（Office 2013 以降、デスクトップ版）
+- .NET Framework 4.7.2 以降
+- Visual Studio Tools for Office (VSTO) ランタイム
+- [gnuplot](http://www.gnuplot.info/)（Windows 版。例: `C:\Program Files\gnuplot\bin\gnuplot.exe`）
 
-https://gregmaxey.com/word_tip_pages/customize_shortcut_menu.html
+---
 
-https://www.rondebruin.nl/win/s2/win014.htm 
+## リボンのボタンと使い方
 
-Step 2 - Make sure the downloaded files are unblocked. 
+Excel のリボンに追加される **「Gnuplot」** タブから各機能を操作します。
 
-When add-in files are downloaded from the Internet, they are blocked by Windows for "security" reasons. Be sure to unblock GnuPlot.xlam, GnuPlot.xlsx, and GnuPlot.xltx immediately after downloading them. 
+```
+[ Gnuplot タブ ]
+├── グラフ グループ
+│   ├── [新規グラフ]
+│   ├── [編集]
+│   └── [再描画]
+├── データ挿入 グループ
+│   ├── [列データ]
+│   └── [マトリクス (3D)]
+├── プリセット グループ
+│   └── [プリセット管理]
+├── ツール グループ
+│   ├── [エラーログ]
+│   ├── [自動更新] (トグル)
+│   └── [すべて再描画]
+└── 設定 グループ
+    └── [設定]
+```
 
-https://blogs.msdn.microsoft.com/delay/p/unblockingdownloadedfile/ 
+### 1. グラフ グループ
 
-https://winaero.com/blog/disable-downloaded-files-from-being-blocked-in-windows-10/ 
+- **新規グラフ** (`btnNewPlot`)
+  - スクリプトエディタを開き、新しいグラフを作成します。
+  - エディタ上で gnuplot スクリプトを記述し、プレビューで確認してから「OK」を押すと、選択中セルの右隣にグラフ画像が挿入されます。
 
-http://www.jkp-ads.com/Articles/Excel-Add-ins-fail-to-load.asp 
+- **編集** (`btnEditPlot`)
+  - シート上に挿入されている Gnuplot グラフを選択した状態でクリックします。
+  - そのグラフを作成したときのスクリプト・設定が読み込まれた状態でエディタが開き、スクリプトの修正や再実行ができます。
+  - *(※ Gnuplot 以外の図形を選択している場合は警告が表示されます)*
 
-Step 3 - Install the add-in. 
+- **再描画** (`btnRedraw`)
+  - 選択中の Gnuplot グラフを、現在の最新セルデータを使って手動で再描画します。
 
-The addin needs to be installed and activated in Excel. This procedure varies slightly depending on your versions of Windows and Excel.
+---
 
-http://www.contextures.com/exceladdins.html 
+### 2. データ挿入 グループ
 
-https://www.excelcampus.com/tools/how-to-install-an-excel-add-in-guide/ 
+- **列データ** (`btnInsertColumn`)
+  - シート上でグラフ化したいデータ範囲（例: X軸とY軸のデータ列など）を選択してからクリックします。
+  - エディタが起動し、カーソル位置に `<<"Sheet1!A1:B20">>` という形式のデータ参照式が自動挿入されます。
+  - 離れた列同士を Ctrl キーで複数選択した場合でも、自動的に同じ行で整列されてデータファイル化されます。
+  - **スクリプト例**:
+    ```gnuplot
+    plot <<"Sheet1!A2:B50">> using 1:2 with linespoints title "測定値"
+    ```
 
-https://www.youtube.com/watch?v=reuU2zUsEPM 
+- **マトリクス (3D)** (`btnInsertMatrix`)
+  - 3次元曲面（`splot`）や等高線マップを描画するための 2 次元格子状データを指定します。
+  - 格子状のデータ範囲を選択してクリックすると、エディタに `<<matrix "Sheet1!B2:F20">>` 形式で挿入されます。
+  - **スクリプト例**:
+    ```gnuplot
+    splot <<matrix "Sheet1!B2:F20">> matrix with pm3d title "分布"
+    ```
 
-Hard part's over.
+---
 
-Step 4 - Verify that the add-in has been successfully installed. 
+### 3. プリセット グループ
 
-You should see a new tab in the ribbon, GNUPLOT, toward the right. When you click on it, you should see icons for Setup, Create, Edit, and Render, along with Help and Info. When you click on Info, you should see a simple info box. If this works, the add-in has been successfully installed.
+- **プリセット管理** (`btnPresets`)
+  - スタイル設定やひな型スクリプトをプリセットとして保存・編集・適用する画面を開きます。
+  - 散布図、複数軸、等高線など、チームや業務で共通して使うグラフレイアウトをテンプレート化できます。
 
-Step 5 - Set up the add-in for first time use. 
+---
 
-The add-in needs to know where the GnuPlot executable can be found on your computer. Often it is C:\Program Files\gnuplot\bin, but it can be anywhere. Click the Setup button in the GNUPLOT ribbon and fill in the relevant field in the dialogue box. This information will be saved in your computer's registry and needs to be entered only once. 
+### 4. ツール グループ
 
-Step 6 - Use the GnuPlot.xlsx helper workbook and/or the GnuPlot.xltx template. 
+- **エラーログ** (`btnErrorLog`)
+  - gnuplot の実行時エラーやスクリプト構文エラーが発生した際の詳細ログ（エラー行、出力メッセージ、実行コード）を表示します。
+  - グラフがうまく描画されない場合のトラブルシューティングに役立ちます。
 
-This is an empty workbook with the context menus configured so that you don't need to click around the ribbon to find the options, instead they are right there when you right click.  Alternatively, the GnuPlot.xltx is a normal Excel template which accomplishes the same thing.  Note there is no VBA code here, only ribbon XML definitions.
+- **自動更新** (`tglAutoRefresh`)
+  - セル変更時の自動再描画機能の有効／無効を切り替えるトグルボタンです。
+  - ON の状態では、グラフが参照しているセル範囲の値が書き換わると、自動的にグラフが最新化されます。
+  - 大量データ編集時など、リアルタイム更新を一時停止したい場合は OFF にしてください。
 
-Step 7 - Your first GnuPlot 
+- **すべて再描画** (`btnRefreshAll`)
+  - 現在のアクティブシート上にあるすべての Gnuplot グラフを一括で再描画します。
 
-As a first example, you will get one of the existing demos to work. This demo generates its own data and does not require data from outside the graph. The catalogue of demos is here http://gnuplot.sourceforge.net/demo_5.0/ Start Excel with a fresh new workbook. Click the Create button on the ribbon. A square Gnuplot logo should appear. Stretch the logo to be the approximate shape desired. Click the Edit button on the ribbon. An editor pane should pop up. Copy the entire GnuPlot script from http://gnuplot.sourceforge.net/demo_5.0/contours.6.gnu and paste it into the editor window, make no changes, and press OK. Click the Render button on the ribbon. The demo plot should appear. You may want to make some adjustments to the size of the graph, then press Render again. The resulting picture can be copied freely to other Excel sheets, to Word, or to PowerPoint. 
+---
 
-Step 8 - Your second GnuPlot 
+### 5. 設定 グループ
 
-Next, you will get another existing demo to work, but one of them which requires data. In your workbook, create a sheet called "Finance". In your GnuPlot installation locate file "\gnuplot\demo\finance.dat" and open it with Notepad or equivalent. Copy the entire contents of the file to the clipboard, Ctrl-A then Ctrl-C. Go to your newly created Finance sheet and paste the clipboard contents starting at the first cell. Ctrl-V to paste. Make sure the entire contents of what you just pasted is selected. Type the word Finance and press enter in the name box of the spreadsheet, which should be directly above cell A1. This will establish a Named Range called Finance. https://exceljet.net/named-ranges for more info. Create a new sheet or use one of the existing empty ones. Click the Create button, resize the picture, then click the Edit button, as before. Copy the entire GnuPlot script from http://gnuplot.sourceforge.net/demo_5.2/finance.4.gnu In the editor window, change 'finance.dat' to <<"finance!finance">> then press save. The first "finance" is the name of the sheet, while the second "finance" is the named range. Click the Render button on the ribbon. The demo plot should appear. As before, You may want to make some adjustments to the size of the graph, then press Render again. 
+- **設定** (`btnSetup`)
+  - アドイン全体の動作設定を行うダイアログを開きます。
+    - **gnuplot.exe のパス**: お使いの PC にインストールされている `gnuplot.exe` のフルパス（例: `C:\Program Files\gnuplot\bin\gnuplot.exe`）。
+    - **PNG Terminal オプション**: PNG 出力時の gnuplot 追加オプション（既定: `color font 'Arial,11'`）。
+    - **PDF Terminal オプション**: PDF 出力時の gnuplot 追加オプション（既定: `color font 'Arial,11'`）。
+    - **既定の出力形式**: PNG または PDF。
+    - **ブックと同じ場所にファイルを保存**: チェックを入れると、Excel ブックと同じフォルダに生成画像/PDFファイルを出力・保持します。
+    - **セル変更時の自動更新**: 既定で自動更新を有効にするかどうか。
 
-That's it.
+---
+
+## スクリプトエディタの基本操作
+
+1. **スクリプト入力領域**: gnuplot の標準構文をそのまま記述できます。
+2. **プレビュー表示**: 画面下部の「プレビュー」ボタン（または `F5` キー）を押すと、右側のプレビュー領域にグラフが即時レンダリングされます。
+3. **データ参照構文**:
+   - `<<"[シート名!]セル範囲">>`: 列形式データとして展開
+   - `<<matrix "[シート名!]セル範囲">>`: マトリクス形式（空行区切り grid）として展開
+4. **メタデータ設定**:
+   - **出力形式**: PNG または PDF を選択可能。
+   - **動的リンク**: このグラフのセル変更連動を個別に有効にするかを指定。
+   - **サイズ指定**: 出力グラフの幅・高さをピクセル単位で指定。
+
+---
+
+## トラブルシューティング
+
+- **「unrecognized terminal option」というエラーが出る場合**:
+  - 「設定」ボタンを開き、「PNG Terminal オプション」に誤ったキーワード（`cairo` など）が含まれていないか確認してください。推奨設定は `color font 'Arial,11'` です。
+- **「gnuplot.exe が見つかりません」というエラーが出る場合**:
+  - 「設定」ボタンから、インストール済みの `gnuplot.exe` の正しいパスを指定してください。
+

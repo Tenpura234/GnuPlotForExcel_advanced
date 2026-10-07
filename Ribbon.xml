@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="Ribbon_Load">
+  <ribbon>
+	<tabs>
+	  <tab id="tabGnuplot" label="Gnuplot" insertAfterMso="TabView">
+		<group id="grpPlot" label="グラフ">
+		  <button id="btnNewPlot" label="新規グラフ" size="large"
+				  imageMso="ChartInsert" onAction="OnNewPlot"
+				  supertip="Gnuplot スクリプトエディタを開き、新しいグラフを作成します。" />
+		  <button id="btnEditPlot" label="編集" size="large"
+				  imageMso="ChartEditDataSource" onAction="OnEditPlot"
+				  supertip="選択中の Gnuplot グラフのスクリプトを編集します。" />
+		  <button id="btnRedraw" label="再描画" size="large"
+				  imageMso="ChartRefresh" onAction="OnRedraw"
+				  supertip="選択中の Gnuplot グラフを最新のセルデータで再描画します。" />
+		</group>
+		<group id="grpInsert" label="データ挿入">
+		  <button id="btnInsertColumn" label="列データ" size="large"
+				  imageMso="TableInsert" onAction="OnInsertColumnData"
+				  supertip="選択範囲を plot 用のデータ参照 &lt;&lt;&quot;範囲&quot;&gt;&gt; としてエディタに挿入します。" />
+		  <button id="btnInsertMatrix" label="マトリクス (3D)" size="large"
+				  imageMso="Chart3DEffectFormat" onAction="OnInsertMatrixData"
+				  supertip="選択範囲を splot/等高線用の &lt;&lt;matrix &quot;範囲&quot;&gt;&gt; としてエディタに挿入します。" />
+		</group>
+		<group id="grpPreset" label="プリセット">
+		  <button id="btnPresets" label="プリセット管理" size="large"
+				  imageMso="SaveAsTemplateOrTheme" onAction="OnManagePresets"
+				  supertip="書式プリセットの保存・適用を行います。" />
+		</group>
+		<group id="grpTools" label="ツール">
+		  <button id="btnErrorLog" label="エラーログ" size="large"
+				  imageMso="ErrorsMessage" onAction="OnShowErrorLog"
+				  supertip="Gnuplot のエラーログを表示します。" />
+		  <toggleButton id="tglAutoRefresh" label="自動更新" size="large"
+				  imageMso="RecurrenceEdit" onAction="OnToggleAutoRefresh"
+				  getPressed="OnGetAutoRefreshPressed"
+				  supertip="セル変更に連動してグラフを自動更新します。" />
+		  <button id="btnRefreshAll" label="すべて再描画" size="large"
+				  imageMso="RefreshAll" onAction="OnRefreshAll"
+				  supertip="シート上のすべての Gnuplot グラフを再描画します。" />
+		</group>
+		<group id="grpSettings" label="設定">
+		  <button id="btnSetup" label="設定" size="large"
+				  imageMso="ControlPanel" onAction="OnSetup"
+				  supertip="gnuplot.exe のパスや出力設定を行います。" />
+		</group>
+	  </tab>
+	</tabs>
+  </ribbon>
+</customUI>
